@@ -36,8 +36,12 @@ class MyResultWorker(ResultWorker):
         # your processing code goes here
         if isinstance(res, list):
             for result in res:
+                log_dict = {'title': result['Title'], 'type': result['Type']}
+                ResultWorker.on_result(self, task, log_dict)
                 self.dump(result)
         elif isinstance(res, dict):
+            log_dict = {'title': res['Title'], 'type': res['Type']}
+            ResultWorker.on_result(self, task, log_dict)
             self.dump(res)
         else:
             raise Exception("Wrong result type")
