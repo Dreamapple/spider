@@ -53,8 +53,10 @@ class MyResultWorker(ResultWorker):
         assert result['Media']
 
         state = self.redis_client.get(result["Url"])
-        if isinstance(state, int) and state > 0:
-            return
+        if state:
+            state=state.decode()
+            if state == "uploaded":
+                pass
 
         if result['Type'].startswith('joke'):
             self.dump_joke(result)
@@ -74,7 +76,7 @@ class MyResultWorker(ResultWorker):
         assert result['Binary']
         i = PIL.Image.open(io.BytesIO(result['Binary']))
         result["Width"], result['Height'] = i.size
-        result["ImageType"] = "image/%s" % re.match(r"^PIL\.(\w+)ImagePlugin$", i.__module__).group(1).lower(),
+        result["ImageType"] = "image/%s" % re.match(r"^PIL\.(\w+)ImagePlugin$", i.__module__).group(1).lower()
         result["Base64Content"] = base64.encodebytes(result["Binary"]).decode('ascii')
         del result['Binary']
         with open(join(self.save_folder, result['Type'], result['Title']), 'w', encoding='utf-8') as fp:
