@@ -68,7 +68,8 @@ class MyResultWorker(ResultWorker):
     def dump_joke(self, result):
         assert result['Content']
         assert result['RawHtml']
-        with open(join(self.save_folder, result['Type'], result['Title']), 'w', encoding='utf-8') as fp:
+        num = self.redis_client.incr(result['Type'])
+        with open(join(self.save_folder, result['Type'], "%06d.json"%num), 'w', encoding='utf-8') as fp:
             json.dump(result, fp)
         self.redis_client.set(result["Url"], 1)
 
@@ -79,6 +80,7 @@ class MyResultWorker(ResultWorker):
         result["ImageType"] = "image/%s" % re.match(r"^PIL\.(\w+)ImagePlugin$", i.__module__).group(1).lower()
         result["Base64Content"] = base64.encodebytes(result["Binary"]).decode('ascii')
         del result['Binary']
-        with open(join(self.save_folder, result['Type'], result['Title']), 'w', encoding='utf-8') as fp:
+        num = self.redis_client.incr(result['Type'])
+        with open(join(self.save_folder, result['Type'], "%06d.json"%num), 'w', encoding='utf-8') as fp:
             json.dump(result, fp)
         self.redis_client.set(result["Url"], 1)
